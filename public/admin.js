@@ -1,44 +1,44 @@
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/totp-secret')
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('qrcode').src = data.qr;
-        localStorage.setItem('totp-secret', data.secret);
-    });
+// Hardcoded TOTP secret
+const hardcodedTOTPSecret = 'IFMEETJOKJKVIVSXEZ5C653NKJLFK3R4NU4U463IOQ4VWLDDGVZQ';
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle the authentication form submission
     document.getElementById('authForm').addEventListener('submit', function(event) {
         event.preventDefault();
         const token = document.getElementById('token').value;
-        const secret = localStorage.getItem('totp-secret');
 
         fetch('/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, secret })
+            body: JSON.stringify({ token, secret: hardcodedTOTPSecret })
         })
         .then(response => response.json())
         .then(data => {
             if (data.verified) {
                 document.getElementById('authDiv').style.display = 'none';
                 document.getElementById('adminContent').style.display = 'block';
-                loadWaitlist();
+                loadWaitlist(); // Load the waitlist after successful authentication
             } else {
                 alert('Authentication failed');
             }
         });
     });
 
+    // Handle the back button click
     document.getElementById('backButton').addEventListener('click', function() {
         window.location.href = '/';
     });
 });
 
+// Function to load the waitlist
 function loadWaitlist() {
     fetch('/waitlist')
     .then(response => response.json())
     .then(data => {
         const waitlistElement = document.getElementById('waitlist');
-        waitlistElement.innerHTML = '';
+        waitlistElement.innerHTML = ''; // Clear existing waitlist items
+
+        // Populate the waitlist
         data.forEach(user => {
             const listItem = document.createElement('li');
             listItem.textContent = `${user.name} (${user.email})`;
@@ -53,7 +53,7 @@ function loadWaitlist() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        loadWaitlist();
+                        loadWaitlist(); // Reload waitlist after deletion
                     }
                 });
             });
