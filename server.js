@@ -4,9 +4,6 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
-const dotenv = require('dotenv');
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,17 +16,15 @@ if (fs.existsSync('waitlist.json')) {
     waitlist = JSON.parse(fs.readFileSync('waitlist.json'));
 }
 
-// Check if the TOTP_SECRET is already set in the environment
-let totpSecret = process.env.TOTP_SECRET;
+// Hardcoded TOTP secret
+const totpSecret = 'IFMEETJOKJKVIVSXEZ5C653NKJLFK3R4NU4U463IOQ4VWLDDGVZQ';
 
-if (!totpSecret) {
-    // If not, generate a new secret and store it in the .env file
-    const secret = speakeasy.generateSecret({ name: "Waitlist Tool Admin" });
-    totpSecret = secret.base32;
-
-    // Save the secret to the .env file (this is just for example purposes)
-    fs.appendFileSync('.env', `\nTOTP_SECRET=${totpSecret}`);
-}
+// Remove this section since we're hardcoding the secret
+// if (!totpSecret) {
+//     const secret = speakeasy.generateSecret({ name: "Waitlist Tool Admin" });
+//     totpSecret = secret.base32;
+//     fs.appendFileSync('.env', `\nTOTP_SECRET=${totpSecret}`);
+// }
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
