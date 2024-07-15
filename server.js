@@ -1,57 +1,64 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const speakeasy = require('speakeasy');
+const qrcode = require('qrcode');
+
 const app = express();
-const PORT = 3000;
-
-let waitlist = [];
-
-// Middleware to serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Load waitlist from JSON file if it exists
+let waitlist = [];
 if (fs.existsSync('waitlist.json')) {
-    const data = fs.readFileSync('waitlist.json', 'utf-8');
-    waitlist = JSON.parse(data);
+    waitlist = JSON.parse(fs.readFileSync('waitlist.json'));
 }
 
-// Endpoint to get the waitlist
-app.get('/api/waitlist', (req, res) => {
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/totp-secret', (req, res) => {
+    const secret = speakeasy.generateSecret({ name: "Waitlist Tool Admin" });
+    qrcode.toDataURL(secret.otpauth_url, (err, data_url) => {
+        res.json({ secret: secret.base32, qr: data_url });
+    });
+});
+
+app.post('/verify', (req, res) => {
+    const { token, secret } = req.body;
+    const verified = speakeasy.totp.verify({
+        secret,
+        encoding: 'base32',
+        token
+    });
+    res.json({ verified });
+});
+
+app.post('/signup', (req, res) => {
+    const { name, email } = req.body;
+    waitlist.push({ name, email });
+    fs.writeFileSync('waitlist.json', JSON.stringify(waitlist, null, 2));
+    res.json({ success: true });
+});
+
+app.get('/waitlist', (req, res) => {
     res.json(waitlist);
 });
 
-// Endpoint to add a user to the waitlist
-app.post('/api/waitlist', (req, res) => {
-    const user = req.body;
-    waitlist.push(user);
-
-    fs.writeFile('waitlist.json', JSON.stringify(waitlist, null, 2), (err) => {
-        if (err) {
-            res.status(500).json({ message: 'Error saving data.' });
-        } else {
-            res.json({ message: 'User added successfully!' });
-        }
-    });
-});
-
-// Endpoint to delete a user from the waitlist
-app.delete('/api/waitlist/:email', (req, res) => {
-    const email = req.params.email;
+app.delete('/remove', (req, res) => {
+    const { email } = req.body;
     waitlist = waitlist.filter(user => user.email !== email);
-
-    fs.writeFile('waitlist.json', JSON.stringify(waitlist, null, 2), (err) => {
-        if (err) {
-            res.status(500).json({ message: 'Error deleting data.' });
-        } else {
-            res.json({ message: 'User deleted successfully!' });
-        }
-    });
+    fs.writeFileSync('waitlist.json', JSON.stringify(waitlist, null, 2));
+    res.json({ success: true });
 });
 
-// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
