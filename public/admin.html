@@ -7,19 +7,19 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <h1>Admin Page</h1>
-    <div id="authDiv">
-        <p>Scan this QR code with your Google Authenticator app:</p>
-        <img id="qrcode" alt="QR Code">
-        <form id="authForm">
-            <input type="text" id="token" placeholder="Enter authentication code" required>
-            <button type="submit">Authenticate</button>
-        </form>
-    </div>
-    <div id="adminContent" style="display:none;">
-        <button id="backButton">Back to Home</button>
-        <h2>Waitlist</h2>
-        <ul id="waitlist"></ul>
+    <div class="container">
+        <button id="backButton" onclick="window.location.href='/index.html';">Back to Home</button>
+        <h1>Admin Page</h1>
+        <div id="authDiv">
+            <form id="authForm">
+                <input type="text" id="token" placeholder="Enter authentication code" required>
+                <button type="submit">Authenticate</button>
+            </form>
+        </div>
+        <div id="adminContent" style="display:none;">
+            <h2>Waitlist</h2>
+            <ul id="waitlist" class="waitlist"></ul>
+        </div>
     </div>
     <script src="/admin.js"></script>
 </body>
