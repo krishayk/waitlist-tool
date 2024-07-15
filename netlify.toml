@@ -1,7 +1,0 @@
-[build]
-  functions = "functions"
-  publish = "public"
-
-[dev]
-  command = "npm start"
-  targetPort = 3000
