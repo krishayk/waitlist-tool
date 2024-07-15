@@ -1,4 +1,3 @@
-// Hardcoded TOTP secret
 const hardcodedTOTPSecret = 'IFMEETJOKJKVIVSXEZ5C653NKJLFK3R4NU4U463IOQ4VWLDDGVZQ';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -27,6 +26,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle the back button click
     document.getElementById('backButton').addEventListener('click', function() {
         window.location.href = '/';
+    });
+
+    // Handle the add user form submission
+    document.getElementById('signupForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+
+        fetch('/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadWaitlist(); // Reload waitlist on successful sign-up
+                document.getElementById('name').value = '';
+                document.getElementById('email').value = '';
+            } else {
+                alert(data.message); // Show error message
+            }
+        });
     });
 });
 

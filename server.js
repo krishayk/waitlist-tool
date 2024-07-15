@@ -19,21 +19,17 @@ if (fs.existsSync('waitlist.json')) {
 // Hardcoded TOTP secret
 const totpSecret = 'IFMEETJOKJKVIVSXEZ5C653NKJLFK3R4NU4U463IOQ4VWLDDGVZQ';
 
-// Remove this section since we're hardcoding the secret
-// if (!totpSecret) {
-//     const secret = speakeasy.generateSecret({ name: "Waitlist Tool Admin" });
-//     totpSecret = secret.base32;
-//     fs.appendFileSync('.env', `\nTOTP_SECRET=${totpSecret}`);
-// }
-
+// Serve the main page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Serve the admin page
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Serve the TOTP secret and QR code
 app.get('/totp-secret', (req, res) => {
     qrcode.toDataURL(speakeasy.otpauthURL({
         secret: totpSecret,
@@ -49,6 +45,7 @@ app.get('/totp-secret', (req, res) => {
     });
 });
 
+// Verify the TOTP token
 app.post('/verify', (req, res) => {
     const { token, secret } = req.body;
     const verified = speakeasy.totp.verify({
@@ -59,17 +56,26 @@ app.post('/verify', (req, res) => {
     res.json({ verified });
 });
 
+// Sign up a new user, with duplicate email check
 app.post('/signup', (req, res) => {
     const { name, email } = req.body;
+
+    // Check for duplicate email
+    if (waitlist.some(user => user.email === email)) {
+        return res.status(400).json({ success: false, message: 'Email already exists' });
+    }
+
     waitlist.push({ name, email });
     fs.writeFileSync('waitlist.json', JSON.stringify(waitlist, null, 2));
     res.json({ success: true });
 });
 
+// Get the waitlist
 app.get('/waitlist', (req, res) => {
     res.json(waitlist);
 });
 
+// Remove a user from the waitlist
 app.delete('/remove', (req, res) => {
     const { email } = req.body;
     waitlist = waitlist.filter(user => user.email !== email);
