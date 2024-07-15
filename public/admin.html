@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Admin</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Admin Panel</h1>
-        <form id="password-form">
-            <input type="password" id="password" placeholder="Enter password" required>
-            <button type="submit">Submit</button>
+    <h1>Admin Page</h1>
+    <div id="authDiv">
+        <p>Scan this QR code with your Google Authenticator app:</p>
+        <img id="qrcode" alt="QR Code">
+        <form id="authForm">
+            <input type="text" id="token" placeholder="Enter authentication code" required>
+            <button type="submit">Authenticate</button>
         </form>
-        <div id="user-list">
-            <!-- User list will be loaded here -->
-        </div>
-        <a href="index.html" class="back-button">Back</a>
     </div>
-    <script src="admin.js"></script>
+    <div id="adminContent" style="display:none;">
+        <button id="backButton">Back to Home</button>
+        <h2>Waitlist</h2>
+        <ul id="waitlist"></ul>
+    </div>
+    <script src="/admin.js"></script>
 </body>
 </html>
